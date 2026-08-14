@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Plantas - Suculenta Groot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .plant-info {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #4a5568;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .btn-water {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-garlic {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-eggshell {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .history {
+            margin-top: 30px;
+        }
+        
+        .history h2 {
+            color: #2d3748;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        
+        .history-item {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .history-item.garlic {
+            border-left-color: #f5576c;
+        }
+        
+        .history-item.eggshell {
+            border-left-color: #00f2fe;
+        }
+        
+        .history-date {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .history-action {
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .modal-confirm {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .last-update {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 Suculenta Groot</h1>
+            <p class="subtitle">Echeveria - Vaso do Groot</p>
+        </header>
+        
+        <div class="plant-info">
+            <div class="info-row">
+                <span class="info-label">📅 Data do Plantio</span>
+                <span class="info-value" id="planting-date">14/08/2026</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">💧 Última Rega</span>
+                <span class="info-value" id="last-water">--/--/----</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">📅 Próxima Rega</span>
+                <span class="info-value" id="next-water">--/--/----</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">🧄 Último Alho</span>
+                <span class="info-value" id="last-garlic">--/--/----</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">🥚 Última Casca de Ovo</span>
+                <span class="info-value" id="last-eggshell">--/--/----</span>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-water" onclick="registerAction('water')">
+                💧 Registrar Rega
+            </button>
+            <button class="btn btn-garlic" onclick="registerAction('garlic')">
+                🧄 Registrar Alho
+            </button>
+            <button class="btn btn-eggshell" onclick="registerAction('eggshell')">
+                🥚 Registrar Casca de Ovo
+            </button>
+        </div>
+        
+        <div class="history">
+            <h2>📋 Histórico de A ações</h2>
+            <div id="history-list">
+                <p style="color: #718096; text-align: center;">Nenhuma ação registrada ainda</p>
+            </div>
+        </div>
+        
+        <p class="last-update">Ú©ltima atualização: <span id="last-update">--/--/---- --:--</span></p>
+    </div>
+    
+    <!-- Modal de confirmaç©£o -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirmar aç­o?</h3>
+            <p id="modal-message">Deseja registrar esta aç­o?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="modal-btn modal-confirm" onclick="confirmAction()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuraçµµes da planta
+        const plantConfig = {
+            name: 'Suculenta Groot',
+            species: 'Echeveria',
+            wateringInterval: 10, // dias entre regas
+            garlicInterval: 30, // dias entre aplicaçµµes de alho
+            eggshellInterval: 180 // dias entre cascas de ovo
+        };
+        
+        // Dados da planta (carrega do localStorage ou usa padr­o)
+        let plantData = JSON.parse(localStorage.getItem('plantData')) || {
+            plantingDate: '14/08/2026',
+            lastWater: null,
+            nextWater: null,
+            lastGarlic: null,
+            lastEggshell: null,
+            history: []
+        };
+        
+        let currentAction = null;
+        
+        // Funçµ£o para formatar data atual
+        function getCurrentDate() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return {
+                date: `${day}/${month}/${year}`,
+                time: `${hours}:${minutes}`,
+                full: `${day}/${month}/${year} ${hours}:${minutes}`
+            };
+        }
+        
+        // Calcular prâµ¢xima data
+        function calculateNextDate(currentDate, intervalDays) {
+            if (!currentDate) return null;
+            const [day, month, year] = currentDate.split('/').map(Number);
+            const date = new Date(year, month - 1, day);
+            date.setDate(date.getDate() + intervalDays);
+            const nextDay = String(date.getDate()).padStart(2, '0');
+            const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
+            const nextYear = date.getFullYear();
+            return `${nextDay}/${nextMonth}/${nextYear}`;
+        }
+        
+        // Atualizar interface
+        function updateUI() {
+            document.getElementById('last-water').textContent = plantData.lastWater || '--/--/----';
+            document.getElementById('next-water').textContent = plantData.nextWater || '--/--/----';
+            document.getElementById('last-garlic').textContent = plantData.lastGarlic || '--/--/----';
+            document.getElementById('last-eggshell').textContent = plantData.lastEggshell || '--/--/----';
+            
+            // Atualizar histâµ¢rico
+            const historyList = document.getElementById('history-list');
+            if (plantData.history.length === 0) {
+                historyList.innerHTML = '<p style="color: #718096; text-align: center;">Nenhuma aç­o registrada ainda</p>';
+            } else {
+                historyList.innerHTML = plantData.history.slice(0, 10).map(item => {
+                    let icon = '';
+                    let className = '';
+                    if (item.type === 'water') { icon = '💧'; className = ''; }
+                    else if (item.type === 'garlic') { icon = '🧄'; className = 'garlic'; }
+                    else if (item.type === 'eggshell') { icon = '🥚'; className = 'eggshell'; }
+                    
+                    return `
+                        <div class="history-item ${className}">
+                            <div class="history-date">${item.date}</div>
+                            <div class="history-action">${icon} ${item.action}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Atualizar â­ltima atualizaçµ£o
+            const now = getCurrentDate();
+            document.getElementById('last-update').textContent = now.full;
+            
+            // Salvar no localStorage
+            localStorage.setItem('plantData', JSON.stringify(plantData));
+        }
+        
+        // Registrar aç­o
+        function registerAction(type) {
+            const actions = {
+                water: { name: 'Rega', icon: '💧' },
+                garlic: { name: 'Aplicaçµ£o de Alho', icon: '🧄' },
+                eggshell: { name: 'Aplicaçµ£o de Casca de Ovo', icon: '🥚' }
+            };
+            
+            currentAction = type;
+            const action = actions[type];
+            
+            document.getElementById('modal-title').textContent = `${action.icon} Confirmar ${action.name}?`;
+            document.getElementById('modal-message').textContent = `Deseja registrar ${action.name.toLowerCase()} hoje?`;
+            document.getElementById('confirm-modal').classList.add('active');
+        }
+        
+        // Fechar modal
+        function closeModal() {
+            document.getElementById('confirm-modal').classList.remove('active');
+            currentAction = null;
+        }
+        
+        // Confirmar aç­o
+        function confirmAction() {
+            if (!currentAction) return;
+            
+            const now = getCurrentDate();
+            const actions = {
+                water: { name: 'Rega', icon: '💧', field: 'lastWater', nextField: 'nextWater', interval: plantConfig.wateringInterval },
+                garlic: { name: 'Aplicaçµ£o de Alho', icon: '🧄', field: 'lastGarlic', nextField: null, interval: plantConfig.garlicInterval },
+                eggshell: { name: 'Aplicaçµ£o de Casca de Ovo', icon: '🥚', field: 'lastEggshell', nextField: null, interval: plantConfig.eggshellInterval }
+            };
+            
+            const action = actions[currentAction];
+            
+            // Atualizar dados
+            plantData[action.field] = now.date;
+            
+            if (action.nextField) {
+                plantData[action.nextField] = calculateNextDate(now.date, action.interval);
+            }
+            
+            // Adicionar ao histâµ¢rico
+            plantData.history.unshift({
+                type: currentAction,
+                action: action.name,
+                date: now.full
+            });
+            
+            // Atualizar interface
+            updateUI();
+            closeModal();
+            
+            // Feedback visual
+            alert(`${action.icon} ${action.name} registrada com sucesso!\nData: ${now.date}`);
+        }
+        
+        // Inicializar
+        updateUI();
+    </script>
+</body>
+</html>
